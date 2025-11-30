@@ -255,8 +255,9 @@
     <script>
         // ==========================================
         // ★設定エリア (Candy Splash 出稼ぎ用)
-        const MY_LIFF_ID = '2008582218-DY3ZexOm'; // ★ここに正しいIDを設定しました
-        const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzy1t4ubKdZdSQyCH1UPX60KrxQPF910Rp_Bk5dDHhI_VR-jUXyQHldsdl_v6koW2Jd/exec';
+        const MY_LIFF_ID = '2008582218-DY3ZexOm'; 
+        // ★新しいGAS URLを設定済みです
+        const GAS_URL    = 'https://script.google.com/macros/s/AKfycbwqPXeNYKrZpz7ChKTote_RBXuCKbpG5_DXzij7j1hWyVvV2p6J_p3H3rrDdcHxG4f6RA/exec';
         // ==========================================
 
         // 日数計算のロジック
@@ -331,6 +332,14 @@
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // 名前だけ簡易チェック
+            const nameInput = document.querySelector('input[name="name"]');
+            if (!nameInput.value) {
+                alert('お名前を入力してください');
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '送信中... <i class="fas fa-spinner fa-spin"></i>';
             const formData = new FormData(form);
