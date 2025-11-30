@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詳細プロフィール入力</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            background-color: #fff0f5; /* 薄いピンク背景 */
+            color: #444; 
+        }
+        .container-box {
+            max-w-md;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 24px;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.1);
+        }
+        .form-title {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #db2777; /* 濃いピンク */
+            margin-bottom: 24px;
+            border-bottom: 2px solid #fce7f3;
+            padding-bottom: 12px;
+        }
+        .label-text { 
+            font-weight: 700; 
+            color: #be185d; 
+            font-size: 0.95rem;
+            margin-bottom: 6px; 
+            display: flex;
+            align-items: center;
+        }
+        .label-icon {
+            margin-right: 6px;
+            color: #f472b6;
+        }
+        .input-field, .select-field, .textarea-field { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #fbcfe8; 
+            border-radius: 12px; 
+            outline: none; 
+            transition: 0.2s; 
+            background: #fff; 
+            font-size: 1rem;
+        }
+        .input-field:focus, .select-field:focus, .textarea-field:focus { 
+            border-color: #ec4899; 
+            box-shadow: 0 0 0 3px #fce7f3; 
+        }
+        .radio-group { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 5px; 
+            background: #fff0f5; 
+            padding: 10px; 
+            border-radius: 10px;
+        }
+        .radio-label { 
+            display: flex; 
+            align-items: center; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: #db2777;
+        }
+        .radio-label input { 
+            margin-right: 6px; 
+            accent-color: #ec4899; 
+            transform: scale(1.2);
+        }
+        .note { 
+            font-size: 0.75rem; 
+            color: #ef4444; 
+            margin-top: 4px; 
+            background: #fef2f2; 
+            padding: 5px; 
+            border-radius: 6px;
+        }
+        .submit-btn {
+            background: linear-gradient(to right, #ec4899, #db2777);
+            color: white;
+            font-weight: bold;
+            padding: 16px;
+            border-radius: 50px;
+            width: 100%;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+            transition: transform 0.2s;
+        }
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+        /* プレビュー用：最初から表示する */
+        .hidden { display: block !important; }
+        #loading { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="container-box">
+        <h1 class="form-title"><i class="fas fa-heart text-pink-400 mr-2"></i>詳細プロフィール</h1>
+
+        <!-- プレビューモード表示 -->
+        <p class="text-center text-xs text-gray-400 mb-4 bg-gray-100 py-1 rounded">※現在デザイン確認モードです</p>
+
+        <form class="space-y-6">
+            
+            <!-- サイト -->
+            <div>
+                <label class="label-text"><i class="fas fa-search label-icon"></i>どの求人サイトを見ましたか？</label>
+                <select class="select-field">
+                    <option>選択してください</option>
+                    <option>バニラ</option>
+                    <option>ガールズヘブン</option>
+                    <option>その他</option>
+                </select>
+            </div>
+
+            <!-- 名前 -->
+            <div>
+                <label class="label-text"><i class="fas fa-user label-icon"></i>お名前</label>
+                <input type="text" class="input-field" placeholder="例：田中ゆり">
+            </div>
+
+            <!-- 期間 (計算機能付き) -->
+            <div class="bg-pink-50 p-4 rounded-xl border border-pink-100">
+                <label class="label-text mb-3"><i class="far fa-calendar-alt label-icon"></i>出稼ぎ期間</label>
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="date" id="startDate" class="input-field">
+                    <span class="text-pink-400 font-bold">〜</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="date" id="endDate" class="input-field">
+                </div>
+                <!-- 計算結果を表示する場所 -->
+                <div id="daysDisplay" class="mt-2 text-right text-pink-600 text-sm font-bold">計 0 日間</div>
+            </div>
+
+            <!-- 住まい -->
+            <div>
+                <label class="label-text"><i class="fas fa-map-marker-alt label-icon"></i>お住まい (県・市まで)</label>
+                <input type="text" class="input-field" placeholder="例：大阪府大阪市">
+            </div>
+
+            <!-- 基本情報 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="label-text"><i class="fas fa-birthday-cake label-icon"></i>年齢</label>
+                    <select id="ageSelect" class="select-field">
+                        <option value="">選択</option>
+                        <!-- JSで18〜50歳を生成 -->
+                    </select>
+                </div>
+                <div>
+                    <label class="label-text"><i class="fas fa-ruler-vertical label-icon"></i>身長</label>
+                    <div class="relative">
+                        <select id="heightSelect" class="select-field">
+                            <option value="">選択</option>
+                            <!-- JSで生成 -->
+                        </select>
+                        <span class="absolute right-8 top-3 text-gray-400 pointer-events-none">cm</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="label-text"><i class="fas fa-weight label-icon"></i>体重</label>
+                    <div class="relative">
+                        <select id="weightSelect" class="select-field">
+                            <option value="">選択</option>
+                            <!-- JSで生成 -->
+                        </select>
+                        <span class="absolute right-8 top-3 text-gray-400 pointer-events-none">kg</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="label-text"><i class="fas fa-heart label-icon"></i>カップ</label>
+                    <select class="select-field">
+                        <option value="">選択</option>
+                        <option>A</option><option>B</option><option>C</option>
+                        <option>D</option><option>E</option>
+                        <option>F</option><option>G</option><option>H</option><option>I</option>
+                        <option>J</option><option>K</option><option>L</option>
+                        <option>それ以上</option>
+                    </select>
+                </div>
+            </div>
+            <p class="note">※今の正確な体重を記入ください。誤差が±4キロ以上あると保証の減額の対象となります。</p>
+
+            <!-- 金額 -->
+            <div>
+                <label class="label-text"><i class="fas fa-yen-sign label-icon"></i>1日の希望金額</label>
+                <select id="incomeSelect" class="select-field">
+                    <option value="">選択してください</option>
+                    <!-- JSで生成 -->
+                </select>
+            </div>
+
+            <!-- 経験 -->
+            <div>
+                <label class="label-text"><i class="fas fa-spa label-icon"></i>エステ経験</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="esthe" checked> 有る</label>
+                    <label class="radio-label"><input type="radio" name="esthe"> 無し</label>
+                </div>
+                <p class="text-xs text-pink-400 mt-1 ml-1">※メンズエステ・風俗エステなど</p>
+            </div>
+
+            <div>
+                <label class="label-text"><i class="fas fa-suitcase label-icon"></i>出稼ぎ経験</label>
+                <div class="radio-group mb-2">
+                    <label class="radio-label"><input type="radio" name="work" checked> 有る</label>
+                    <label class="radio-label"><input type="radio" name="work"> 無し</label>
+                </div>
+                <input type="text" class="input-field text-sm" placeholder="有る場合は高知での経験をご記入下さい">
+            </div>
+
+            <!-- 待機時間（変更箇所） -->
+            <div>
+                <label class="label-text"><i class="fas fa-clock label-icon"></i>希望待機時間</label>
+                <select id="standbySelect" class="select-field">
+                    <option value="">選択してください</option>
+                    <!-- JSで6〜12時間を生成 -->
+                </select>
+            </div>
+
+            <!-- 刺青 -->
+            <div>
+                <label class="label-text"><i class="fas fa-pen-nib label-icon"></i>刺青・傷・妊娠線</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="tattoo"> 有る</label>
+                    <label class="radio-label"><input type="radio" name="tattoo" checked> 無し</label>
+                </div>
+                <p class="note">※有る方は、送信後にLINEで写真の添付をお願いします。</p>
+            </div>
+
+            <!-- アピールと質問を統合（変更箇所） -->
+            <div>
+                <label class="label-text"><i class="fas fa-star label-icon"></i>あなたの長所・性格・気になることなど</label>
+                <textarea rows="5" class="textarea-field" placeholder="明るい性格です、マッサージが得意です。&#13;&#10;お給料のことや寮のことで質問があります。&#13;&#10;など、ご自由にどうぞ♪"></textarea>
+            </div>
+
+            <div class="pt-4 pb-8">
+                <button type="button" class="submit-btn">
+                    この内容で送信する <i class="fas fa-paper-plane ml-2"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // 日数計算のロジック
+        function calculateDays() {
+            const startVal = document.getElementById('startDate').value;
+            const endVal = document.getElementById('endDate').value;
+            const display = document.getElementById('daysDisplay');
+
+            if (startVal && endVal) {
+                const start = new Date(startVal);
+                const end = new Date(endVal);
+                
+                // 差分を計算（ミリ秒）
+                const diffTime = end - start;
+                // 日数に変換 (1日は 1000ミリ秒 * 60秒 * 60分 * 24時間)
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+                if (diffDays >= 0) {
+                    // 当日を含めるなら +1日 するのが一般的
+                    const totalDays = diffDays + 1;
+                    display.textContent = `計 ${totalDays} 日間`;
+                } else {
+                    display.textContent = "日付が正しくありません";
+                }
+            } else {
+                display.textContent = "計 0 日間";
+            }
+        }
+
+        // 日付が変わったら計算を実行する設定
+        document.getElementById('startDate').addEventListener('change', calculateDays);
+        document.getElementById('endDate').addEventListener('change', calculateDays);
+
+        // 選択肢の自動生成
+        window.onload = function() {
+            // 年齢 (18歳〜50歳)
+            const ageSelect = document.getElementById('ageSelect');
+            for (let i = 18; i <= 50; i++) {
+                const option = document.createElement('option');
+                option.text = i + "歳";
+                option.value = i + "歳";
+                ageSelect.appendChild(option);
+            }
+
+            // 身長 (135cm〜185cm)
+            const heightSelect = document.getElementById('heightSelect');
+            for (let h = 135; h <= 185; h++) {
+                const option = document.createElement('option');
+                option.text = h;
+                option.value = h;
+                heightSelect.appendChild(option);
+            }
+
+            // 体重 (30kg〜100kg)
+            const weightSelect = document.getElementById('weightSelect');
+            for (let w = 30; w <= 100; w++) {
+                const option = document.createElement('option');
+                option.text = w;
+                option.value = w;
+                weightSelect.appendChild(option);
+            }
+
+            // 希望金額 (20,000円〜100,000円 5,000円刻み)
+            const incomeSelect = document.getElementById('incomeSelect');
+            for (let money = 20000; money <= 100000; money += 5000) {
+                const option = document.createElement('option');
+                // カンマ区切りの表示にする
+                option.text = money.toLocaleString() + "円";
+                option.value = money;
+                incomeSelect.appendChild(option);
+            }
+
+            // 希望待機時間 (6時間〜12時間)
+            const standbySelect = document.getElementById('standbySelect');
+            for (let t = 6; t <= 12; t++) {
+                const option = document.createElement('option');
+                option.text = t + "時間";
+                option.value = t + "時間";
+                standbySelect.appendChild(option);
+            }
+        };
+    </script>
+
+</body>
+</html>
