@@ -99,18 +99,12 @@
         .submit-btn:active {
             transform: scale(0.98);
         }
-        /* プレビュー用：最初から表示する */
-        .hidden { display: block !important; }
-        #loading { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="container-box">
         <h1 class="form-title"><i class="fas fa-heart text-pink-400 mr-2"></i>詳細プロフィール</h1>
-
-        <!-- プレビューモード表示 -->
-        <p class="text-center text-xs text-gray-400 mb-4 bg-gray-100 py-1 rounded">※現在デザイン確認モードです</p>
 
         <form class="space-y-6">
             
@@ -222,7 +216,7 @@
                 <input type="text" class="input-field text-sm" placeholder="有る場合は高知での経験をご記入下さい">
             </div>
 
-            <!-- 待機時間（変更箇所） -->
+            <!-- 待機時間 -->
             <div>
                 <label class="label-text"><i class="fas fa-clock label-icon"></i>希望待機時間</label>
                 <select id="standbySelect" class="select-field">
@@ -241,7 +235,7 @@
                 <p class="note">※有る方は、送信後にLINEで写真の添付をお願いします。</p>
             </div>
 
-            <!-- アピールと質問を統合（変更箇所） -->
+            <!-- アピールと質問（統合版） -->
             <div>
                 <label class="label-text"><i class="fas fa-star label-icon"></i>あなたの長所・性格など（ご自由にどうぞ♪）<br>気になること・質問など</label>
                 <textarea rows="5" class="textarea-field" placeholder="明るい性格です、マッサージが得意です。&#13;&#10;お給料のことや寮のことで質問があります。&#13;&#10;など、ご自由にどうぞ♪"></textarea>
