@@ -147,6 +147,7 @@
                 <div class="flex items-center gap-2">
                     <input type="date" name="period_end" id="endDate" class="input-field">
                 </div>
+                <!-- 計算結果を表示する場所 -->
                 <div id="daysDisplay" class="mt-2 text-right text-pink-600 text-sm font-bold">計 0 日間</div>
                 
                 <!-- 【重要】計算結果をGASに送るための隠しデータ -->
@@ -223,7 +224,7 @@
                 <label class="label-text"><i class="fas fa-clock label-icon"></i>希望待機時間</label>
                 <select id="standbySelect" name="standby" class="select-field">
                     <option value="">選択してください</option>
-                    <!-- JSで6〜12時間を生成 -->
+                    <!-- JSで生成 -->
                 </select>
             </div>
 
@@ -244,8 +245,7 @@
             </div>
 
             <div class="pt-4 pb-8">
-                <!-- クリックイベントで送信 -->
-                <button type="button" id="submitBtn" class="submit-btn">
+                <button type="submit" id="submitBtn" class="submit-btn">
                     この内容で送信する <i class="fas fa-paper-plane ml-2"></i>
                 </button>
             </div>
@@ -255,7 +255,7 @@
     <script>
         // ==========================================
         // ★設定エリア (Candy Splash 出稼ぎ用)
-        const MY_LIFF_ID = '2008576502-yBQaN7E8'; 
+        const MY_LIFF_ID = '2008582218-DY3ZexOm'; 
         const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzy1t4ubKdZdSQyCH1UPX60KrxQPF910Rp_Bk5dDHhI_VR-jUXyQHldsdl_v6koW2Jd/exec';
         // ==========================================
 
@@ -269,13 +269,16 @@
             if (startVal && endVal) {
                 const start = new Date(startVal);
                 const end = new Date(endVal);
+                
+                // 差分を計算（ミリ秒）
                 const diffTime = end - start;
+                // 日数に変換
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
                 if (diffDays >= 0) {
                     const totalDays = diffDays + 1;
                     display.textContent = `計 ${totalDays} 日間`;
-                    hiddenInput.value = totalDays;
+                    hiddenInput.value = totalDays; // 送信用データも更新
                 } else {
                     display.textContent = "日付が正しくありません";
                     hiddenInput.value = "";
@@ -326,19 +329,11 @@
             }
         }
 
-        submitBtn.addEventListener('click', function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
-            // 名前が入力されているかチェック
-            const nameInput = document.querySelector('input[name="name"]');
-            if (!nameInput.value) {
-                alert('お名前を入力してください');
-                return;
-            }
-
             submitBtn.disabled = true;
             submitBtn.innerHTML = '送信中... <i class="fas fa-spinner fa-spin"></i>';
             const formData = new FormData(form);
-            
             fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: formData })
             .then(() => {
                 alert('送信完了！\n自動返信メッセージをご確認ください。');
