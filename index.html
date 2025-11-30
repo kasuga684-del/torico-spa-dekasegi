@@ -6,6 +6,7 @@
     <title>詳細プロフィール入力</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
         
@@ -99,6 +100,7 @@
         .submit-btn:active {
             transform: scale(0.98);
         }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -106,77 +108,80 @@
     <div class="container-box">
         <h1 class="form-title"><i class="fas fa-heart text-pink-400 mr-2"></i>詳細プロフィール</h1>
 
-        <form class="space-y-6">
+        <div id="loading" class="text-center py-10">
+            <i class="fas fa-spinner fa-spin text-4xl text-pink-400"></i>
+            <p class="text-pink-400 mt-2">読み込み中...</p>
+        </div>
+        <p id="statusMessage" class="hidden text-center text-xs text-pink-400 mb-4"></p>
+
+        <form id="applicationForm" class="space-y-6 hidden">
+            <input type="hidden" id="userId" name="userId">
+            
+            <!-- ★合言葉：これは出稼ぎ用です！ -->
+            <input type="hidden" name="form_type" value="dekasegi">
             
             <!-- サイト -->
             <div>
                 <label class="label-text"><i class="fas fa-search label-icon"></i>どの求人サイトを見ましたか？</label>
-                <select class="select-field">
-                    <option>選択してください</option>
-                    <option>バニラ</option>
-                    <option>ガールズヘブン</option>
-                    <option>その他</option>
+                <select name="site" class="select-field">
+                    <option value="">選択してください</option>
+                    <option value="バニラ">バニラ</option>
+                    <option value="ガールズヘブン">ガールズヘブン</option>
+                    <option value="その他">その他</option>
                 </select>
             </div>
 
             <!-- 名前 -->
             <div>
                 <label class="label-text"><i class="fas fa-user label-icon"></i>お名前</label>
-                <input type="text" class="input-field" placeholder="例：田中ゆり">
+                <input name="name" type="text" required class="input-field" placeholder="例：田中ゆり">
             </div>
 
             <!-- 期間 (計算機能付き) -->
             <div class="bg-pink-50 p-4 rounded-xl border border-pink-100">
                 <label class="label-text mb-3"><i class="far fa-calendar-alt label-icon"></i>出稼ぎ期間</label>
                 <div class="flex items-center gap-2 mb-3">
-                    <input type="date" id="startDate" class="input-field">
+                    <input type="date" name="period_start" id="startDate" class="input-field">
                     <span class="text-pink-400 font-bold">〜</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <input type="date" id="endDate" class="input-field">
+                    <input type="date" name="period_end" id="endDate" class="input-field">
                 </div>
-                <!-- 計算結果を表示する場所 -->
                 <div id="daysDisplay" class="mt-2 text-right text-pink-600 text-sm font-bold">計 0 日間</div>
+                
+                <!-- 【重要】計算結果をGASに送るための隠しデータ -->
+                <input type="hidden" name="period_days" id="periodDaysInput">
             </div>
 
             <!-- 住まい -->
             <div>
                 <label class="label-text"><i class="fas fa-map-marker-alt label-icon"></i>お住まい (県・市まで)</label>
-                <input type="text" class="input-field" placeholder="例：大阪府大阪市">
+                <input name="address" type="text" class="input-field" placeholder="例：大阪府大阪市">
             </div>
 
             <!-- 基本情報 -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="label-text"><i class="fas fa-birthday-cake label-icon"></i>年齢</label>
-                    <select id="ageSelect" class="select-field">
-                        <option value="">選択</option>
-                        <!-- JSで18〜50歳を生成 -->
-                    </select>
+                    <select id="ageSelect" name="age" class="select-field"><option value="">選択</option></select>
                 </div>
                 <div>
                     <label class="label-text"><i class="fas fa-ruler-vertical label-icon"></i>身長</label>
                     <div class="relative">
-                        <select id="heightSelect" class="select-field">
-                            <option value="">選択</option>
-                            <!-- JSで生成 -->
-                        </select>
+                        <select id="heightSelect" name="height" class="select-field"><option value="">選択</option></select>
                         <span class="absolute right-8 top-3 text-gray-400 pointer-events-none">cm</span>
                     </div>
                 </div>
                 <div>
                     <label class="label-text"><i class="fas fa-weight label-icon"></i>体重</label>
                     <div class="relative">
-                        <select id="weightSelect" class="select-field">
-                            <option value="">選択</option>
-                            <!-- JSで生成 -->
-                        </select>
+                        <select id="weightSelect" name="weight" class="select-field"><option value="">選択</option></select>
                         <span class="absolute right-8 top-3 text-gray-400 pointer-events-none">kg</span>
                     </div>
                 </div>
                 <div>
                     <label class="label-text"><i class="fas fa-heart label-icon"></i>カップ</label>
-                    <select class="select-field">
+                    <select name="cup" class="select-field">
                         <option value="">選択</option>
                         <option>A</option><option>B</option><option>C</option>
                         <option>D</option><option>E</option>
@@ -191,18 +196,15 @@
             <!-- 金額 -->
             <div>
                 <label class="label-text"><i class="fas fa-yen-sign label-icon"></i>1日の希望金額</label>
-                <select id="incomeSelect" class="select-field">
-                    <option value="">選択してください</option>
-                    <!-- JSで生成 -->
-                </select>
+                <select id="incomeSelect" name="income" class="select-field"><option value="">選択してください</option></select>
             </div>
 
             <!-- 経験 -->
             <div>
                 <label class="label-text"><i class="fas fa-spa label-icon"></i>エステ経験</label>
                 <div class="radio-group">
-                    <label class="radio-label"><input type="radio" name="esthe" checked> 有る</label>
-                    <label class="radio-label"><input type="radio" name="esthe"> 無し</label>
+                    <label class="radio-label"><input type="radio" name="esthe" value="有る"> 有る</label>
+                    <label class="radio-label"><input type="radio" name="esthe" value="無し" checked> 無し</label>
                 </div>
                 <p class="text-xs text-pink-400 mt-1 ml-1">※メンズエステ・風俗エステなど</p>
             </div>
@@ -210,16 +212,16 @@
             <div>
                 <label class="label-text"><i class="fas fa-suitcase label-icon"></i>出稼ぎ経験</label>
                 <div class="radio-group mb-2">
-                    <label class="radio-label"><input type="radio" name="work" checked> 有る</label>
-                    <label class="radio-label"><input type="radio" name="work"> 無し</label>
+                    <label class="radio-label"><input type="radio" name="work_exp" value="有る"> 有る</label>
+                    <label class="radio-label"><input type="radio" name="work_exp" value="無し" checked> 無し</label>
                 </div>
-                <input type="text" class="input-field text-sm" placeholder="有る場合は高知での経験をご記入下さい">
+                <input name="work_exp_detail" type="text" class="input-field text-sm" placeholder="有る場合は高知での経験をご記入下さい">
             </div>
 
             <!-- 待機時間 -->
             <div>
                 <label class="label-text"><i class="fas fa-clock label-icon"></i>希望待機時間</label>
-                <select id="standbySelect" class="select-field">
+                <select id="standbySelect" name="standby" class="select-field">
                     <option value="">選択してください</option>
                     <!-- JSで6〜12時間を生成 -->
                 </select>
@@ -229,8 +231,8 @@
             <div>
                 <label class="label-text"><i class="fas fa-pen-nib label-icon"></i>刺青・傷・妊娠線</label>
                 <div class="radio-group">
-                    <label class="radio-label"><input type="radio" name="tattoo"> 有る</label>
-                    <label class="radio-label"><input type="radio" name="tattoo" checked> 無し</label>
+                    <label class="radio-label"><input type="radio" name="tattoo" value="有る"> 有る</label>
+                    <label class="radio-label"><input type="radio" name="tattoo" value="無し" checked> 無し</label>
                 </div>
                 <p class="note">※有る方は、送信後にLINEで写真の添付をお願いします。</p>
             </div>
@@ -238,99 +240,116 @@
             <!-- アピールと質問（統合版） -->
             <div>
                 <label class="label-text"><i class="fas fa-star label-icon"></i>あなたの長所・性格など（ご自由にどうぞ♪）<br>気になること・質問など</label>
-                <textarea rows="5" class="textarea-field" placeholder="明るい性格です、マッサージが得意です。&#13;&#10;お給料のことや寮のことで質問があります。&#13;&#10;など、ご自由にどうぞ♪"></textarea>
+                <textarea name="appeal" rows="5" class="textarea-field" placeholder="明るい性格です、マッサージが得意です。&#13;&#10;お給料のことや寮のことで質問があります。&#13;&#10;など、ご自由にどうぞ♪"></textarea>
             </div>
 
             <div class="pt-4 pb-8">
-                <button type="button" class="submit-btn">
+                <!-- クリックイベントで送信 -->
+                <button type="button" id="submitBtn" class="submit-btn">
                     この内容で送信する <i class="fas fa-paper-plane ml-2"></i>
                 </button>
             </div>
-
         </form>
     </div>
 
     <script>
+        // ==========================================
+        // ★設定エリア (Candy Splash 出稼ぎ用)
+        const MY_LIFF_ID = '2008576502-yBQaN7E8'; 
+        const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzy1t4ubKdZdSQyCH1UPX60KrxQPF910Rp_Bk5dDHhI_VR-jUXyQHldsdl_v6koW2Jd/exec';
+        // ==========================================
+
         // 日数計算のロジック
         function calculateDays() {
             const startVal = document.getElementById('startDate').value;
             const endVal = document.getElementById('endDate').value;
             const display = document.getElementById('daysDisplay');
+            const hiddenInput = document.getElementById('periodDaysInput');
 
             if (startVal && endVal) {
                 const start = new Date(startVal);
                 const end = new Date(endVal);
-                
-                // 差分を計算（ミリ秒）
                 const diffTime = end - start;
-                // 日数に変換 (1日は 1000ミリ秒 * 60秒 * 60分 * 24時間)
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
                 if (diffDays >= 0) {
-                    // 当日を含めるなら +1日 するのが一般的
                     const totalDays = diffDays + 1;
                     display.textContent = `計 ${totalDays} 日間`;
+                    hiddenInput.value = totalDays;
                 } else {
                     display.textContent = "日付が正しくありません";
+                    hiddenInput.value = "";
                 }
             } else {
                 display.textContent = "計 0 日間";
+                hiddenInput.value = "";
             }
         }
 
-        // 日付が変わったら計算を実行する設定
         document.getElementById('startDate').addEventListener('change', calculateDays);
         document.getElementById('endDate').addEventListener('change', calculateDays);
 
-        // 選択肢の自動生成
         window.onload = function() {
-            // 年齢 (18歳〜50歳)
             const ageSelect = document.getElementById('ageSelect');
-            for (let i = 18; i <= 50; i++) {
-                const option = document.createElement('option');
-                option.text = i + "歳";
-                option.value = i + "歳";
-                ageSelect.appendChild(option);
-            }
-
-            // 身長 (135cm〜185cm)
+            for (let i = 18; i <= 50; i++) { let op = document.createElement('option'); op.text = i+"歳"; op.value = i+"歳"; ageSelect.appendChild(op); }
             const heightSelect = document.getElementById('heightSelect');
-            for (let h = 135; h <= 185; h++) {
-                const option = document.createElement('option');
-                option.text = h;
-                option.value = h;
-                heightSelect.appendChild(option);
-            }
-
-            // 体重 (30kg〜100kg)
+            for (let h = 135; h <= 185; h++) { let op = document.createElement('option'); op.text = h; op.value = h; heightSelect.appendChild(op); }
             const weightSelect = document.getElementById('weightSelect');
-            for (let w = 30; w <= 100; w++) {
-                const option = document.createElement('option');
-                option.text = w;
-                option.value = w;
-                weightSelect.appendChild(option);
-            }
-
-            // 希望金額 (20,000円〜100,000円 5,000円刻み)
+            for (let w = 30; w <= 100; w++) { let op = document.createElement('option'); op.text = w; op.value = w; weightSelect.appendChild(op); }
             const incomeSelect = document.getElementById('incomeSelect');
-            for (let money = 20000; money <= 100000; money += 5000) {
-                const option = document.createElement('option');
-                // カンマ区切りの表示にする
-                option.text = money.toLocaleString() + "円";
-                option.value = money;
-                incomeSelect.appendChild(option);
-            }
-
-            // 希望待機時間 (6時間〜12時間)
+            for (let m = 20000; m <= 100000; m += 5000) { let op = document.createElement('option'); op.text = m.toLocaleString()+"円"; op.value = m; incomeSelect.appendChild(op); }
             const standbySelect = document.getElementById('standbySelect');
-            for (let t = 6; t <= 12; t++) {
-                const option = document.createElement('option');
-                option.text = t + "時間";
-                option.value = t + "時間";
-                standbySelect.appendChild(option);
-            }
+            for (let t = 6; t <= 12; t++) { let op = document.createElement('option'); op.text = t+"時間"; op.value = t+"時間"; standbySelect.appendChild(op); }
+            
+            initializeLiff();
         };
-    </script>
 
+        const form = document.getElementById('applicationForm');
+        const loading = document.getElementById('loading');
+        const statusMsg = document.getElementById('statusMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const userIdInput = document.getElementById('userId');
+
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: MY_LIFF_ID });
+                if (!liff.isLoggedIn()) { liff.login(); return; }
+                const profile = await liff.getProfile();
+                userIdInput.value = profile.userId;
+                loading.style.display = 'none';
+                form.classList.remove('hidden');
+                statusMsg.textContent = `ログイン中: ${profile.displayName} 様`;
+                statusMsg.classList.remove('hidden');
+            } catch (err) {
+                loading.style.display = 'none';
+                alert('LINE認証エラー: ' + err);
+            }
+        }
+
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // 名前が入力されているかチェック
+            const nameInput = document.querySelector('input[name="name"]');
+            if (!nameInput.value) {
+                alert('お名前を入力してください');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '送信中... <i class="fas fa-spinner fa-spin"></i>';
+            const formData = new FormData(form);
+            
+            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => {
+                alert('送信完了！\n自動返信メッセージをご確認ください。');
+                liff.closeWindow();
+            })
+            .catch(error => {
+                alert('送信失敗。もう一度お試しください。');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'この内容で送信する <i class="fas fa-paper-plane ml-2"></i>';
+            });
+        });
+    </script>
 </body>
 </html>
